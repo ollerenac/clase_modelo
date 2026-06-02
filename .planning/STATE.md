@@ -10,14 +10,14 @@ See: .planning/PROJECT.md (updated 2026-06-02)
 ## Current Status
 
 - **Phase:** 1 of 2
-- **Status:** Not started
-- **Last action:** Project initialized
+- **Status:** Ready to execute
+- **Last action:** Phase 1 planned — 1 plan in 1 wave (2026-06-02)
 
 ## Phase Progress
 
 | Phase | Name | Status | Notes |
 |-------|------|--------|-------|
-| 1 | Repo e Infraestructura | 🔲 Not started | |
+| 1 | Repo e Infraestructura | 📋 Planned | 1 plan, 1 wave |
 | 2 | Contenido y Publicación | 🔲 Not started | Depends on Phase 1 |
 
 ## Decisions Log
