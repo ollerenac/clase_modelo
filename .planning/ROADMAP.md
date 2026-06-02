@@ -40,7 +40,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 02-01-PLAN.md — Rewrite index.html with full EternalBlue content, styles, MITRE table, interactive questions; commit and publish to GitHub Pages
+- [x] 02-01-PLAN.md — Rewrite index.html with full EternalBlue content, styles, MITRE table, interactive questions; commit and publish to GitHub Pages (complete — commit 5a4b30f, pushed to main 2026-06-02)
 
 **Success Criteria:**
 1. La página tiene 4 secciones: Contexto (CVE-2017-0143), Fases del Ataque (reconocimiento → acceso inicial + mecánica Metasploit), Lab (3 pasos), Mapeo MITRE
@@ -63,3 +63,4 @@ Phase 2 requires Phase 1 complete (repo + Pages live before adding content).
 *Roadmap created: 2026-06-02*
 *Updated: 2026-06-02 — Phase 1 plan created (01-01-PLAN.md)*
 *Updated: 2026-06-02 — Phase 2 plan created (02-01-PLAN.md)*
+*Updated: 2026-06-02 — Phase 2 plan 02-01 complete — site live at https://ollerenac.github.io/clase_modelo*
