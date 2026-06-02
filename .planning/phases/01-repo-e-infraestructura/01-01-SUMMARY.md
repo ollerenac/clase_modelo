@@ -18,9 +18,9 @@ decisions:
   - "Used JSON pipe via --input to set GitHub Pages source (--field flag mis-quotes JSON object)"
   - "Pushed local master branch as remote main via git push -u origin master:main"
 metrics:
-  duration: "~5 minutes"
+  duration: "~16 minutes"
   completed_date: "2026-06-02"
-  tasks_completed: 1
+  tasks_completed: 2
   files_created: 1
 ---
 
@@ -33,7 +33,7 @@ metrics:
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
 | 1 | Create repo, add index.html, push to main, enable GitHub Pages | cd8d47a | index.html |
-| 2 | Verify live URL loads in browser | — | (checkpoint — awaiting human) |
+| 2 | Verify live URL loads in browser | — | (checkpoint — approved by user) |
 
 ## What Was Built
 
