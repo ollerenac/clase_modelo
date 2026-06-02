@@ -100,6 +100,29 @@
     .pregunta strong {
       color: #2980b9;
     }
+    .pregunta details {
+      margin-top: 0.8rem;
+    }
+    .pregunta details summary {
+      display: inline-block;
+      cursor: pointer;
+      background: #2980b9;
+      color: white;
+      padding: 0.25rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.88em;
+      font-weight: bold;
+      user-select: none;
+    }
+    .pregunta details summary:hover {
+      background: #1f6391;
+    }
+    .pregunta details[open] summary {
+      margin-bottom: 0.5rem;
+    }
+    .pregunta details p {
+      margin: 0;
+    }
     ul, ol {
       padding-left: 1.5rem;
     }
@@ -307,10 +330,13 @@ vagrant:1000:aad3b435b51404eeaad3b435b51404ee:e02bc503339d51f71d913c245d35b50b::
     (anillo 0), pero Meterpreter necesita correr en modo usuario (anillo 3).
     &iquest;Que mecanismo usa <code>make_kernel_user_payload</code> para cruzar esa frontera
     e inyectar Meterpreter en un proceso de usuario?
-    <br><br>
-    <em>Respuesta esperada: usa un APC (Asynchronous Procedure Call) para inyectar el payload
-    en spoolsv.exe, que es un proceso de modo usuario. El shellcode kernel navega la lista de
-    procesos del kernel, encuentra spoolsv.exe por su hash ROR13, y encola el APC.</em>
+    <details>
+      <summary>Respuesta</summary>
+      <p><em>Usa un APC (Asynchronous Procedure Call) para inyectar el payload en
+      <code>spoolsv.exe</code>, que es un proceso de modo usuario. El shellcode kernel navega
+      la lista de procesos del kernel, encuentra <code>spoolsv.exe</code> por su hash ROR13,
+      y encola el APC.</em></p>
+    </details>
   </div>
 
   <div class="pregunta">
@@ -318,11 +344,13 @@ vagrant:1000:aad3b435b51404eeaad3b435b51404ee:e02bc503339d51f71d913c245d35b50b::
     <code>NT AUTHORITY\SYSTEM</code>. &iquest;Que significa esto en terminos de privilegios
     dentro de Windows? &iquest;Por que el exploit obtiene directamente ese nivel de acceso
     en lugar de un usuario con privilegios restringidos?
-    <br><br>
-    <em>Respuesta esperada: NT AUTHORITY\SYSTEM es la cuenta con maximos privilegios en Windows,
-    por encima de cualquier cuenta de administrador local. Se obtiene directamente porque el
-    exploit ejecuta codigo en modo kernel — el nivel mas privilegiado del sistema — y el payload
-    hereda ese contexto de seguridad al inyectarse en spoolsv.exe.</em>
+    <details>
+      <summary>Respuesta</summary>
+      <p><em>NT AUTHORITY\SYSTEM es la cuenta con maximos privilegios en Windows, por encima de
+      cualquier cuenta de administrador local. Se obtiene directamente porque el exploit ejecuta
+      codigo en modo kernel — el nivel mas privilegiado del sistema — y el payload hereda ese
+      contexto de seguridad al inyectarse en <code>spoolsv.exe</code>.</em></p>
+    </details>
   </div>
 </section>
 
