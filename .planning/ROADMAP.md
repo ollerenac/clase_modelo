@@ -17,6 +17,11 @@
 
 **Requirements:** SITE-01, SITE-02, SITE-03
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 01-01-PLAN.md — Create repo, push index.html skeleton, enable GitHub Pages, verify live URL
+
 **Success Criteria:**
 1. `https://ollerenac.github.io/clase_modelo` carga sin error 404 en un navegador
 2. El repositorio `ollerenac/clase_modelo` aparece como público en `github.com/ollerenac`
@@ -50,3 +55,4 @@ Phase 2 requires Phase 1 complete (repo + Pages live before adding content).
 
 ---
 *Roadmap created: 2026-06-02*
+*Updated: 2026-06-02 — Phase 1 plan created (01-01-PLAN.md)*
