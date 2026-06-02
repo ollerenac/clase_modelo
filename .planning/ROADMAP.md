@@ -31,17 +31,18 @@ Plans:
 
 ### Phase 2: Contenido y Publicación
 
-**Goal:** La página publicada contiene todo el contenido de la clase — contexto histórico, explicación técnica, 3 pasos del lab, tabla MITRE ATT&CK — estructurado para entrega oral de 15 minutos.
+**Goal:** La página publicada contiene todo el contenido de la clase — fases del ataque, mecánica de Metasploit, 3 pasos del lab, tabla MITRE ATT&CK, preguntas interactivas — estructurado para entrega oral de 15 minutos.
 
 **Mode:** mvp
 
-**Requirements:** CONT-01, CONT-02, CONT-03, CONT-04, CONT-05, CONT-06, UX-01, UX-02, UX-03
+**Requirements:** CONT-01, CONT-02, CONT-03, CONT-04, CONT-05, CONT-06, CONT-07, UX-01, UX-02, UX-03, UX-04
 
 **Success Criteria:**
-1. La página tiene 4 secciones claramente delimitadas: Introducción / Contexto, Fundamento Técnico, Lab (3 pasos), Mapeo MITRE
-2. Todos los comandos de shell/Metasploit están en bloques monospace visualmente distinguibles
-3. La indicación "15 minutos" y tiempos sugeridos por sección son visibles en la página
-4. La tabla MITRE ATT&CK muestra T1210 y T1068 con táctica y descripción
+1. La página tiene 4 secciones: Fases del Ataque (reconocimiento → acceso inicial), Mecánica del Exploit (Metasploit + TCP), Lab (3 pasos), Mapeo MITRE
+2. La explicación de cómo Metasploit encapsula el exploit en TCP y cómo el receptor lo ejecuta está presente
+3. Todos los comandos de shell/Metasploit están en bloques monospace visualmente distinguibles
+4. La indicación "15 minutos" y tiempos sugeridos por sección son visibles en la página
+5. Al menos 2 preguntas interactivas están integradas en la página (post-concepto y post-lab)
 
 ---
 
