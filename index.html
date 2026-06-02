@@ -163,52 +163,32 @@
 
   <h3>Mecánica de Metasploit — Cómo funciona el exploit</h3>
 
-  <p><strong>1. <code>make_kernel_user_payload</code> — El puente kernel → usuario</strong></p>
-  <p>
-    EternalBlue da ejecución de código en <strong>modo kernel</strong> (anillo 0), pero
-    Meterpreter necesita correr en <strong>modo usuario</strong> (anillo 3). La función
-    <code>make_kernel_user_payload</code> resuelve esto uniendo dos partes:
-  </p>
   <ul>
     <li>
-      <code>sc</code> — shellcode x64 que corre en modo kernel. Su trabajo: salvar el estado
-      del procesador, navegar la lista de procesos del kernel para encontrar
-      <code>spoolsv.exe</code> por su hash ROR13, inyectar el payload como un APC
-      (Asynchronous Procedure Call) en ese proceso, y restaurar el estado del kernel.
+      <strong>El bug y su impacto:</strong> Los procesos necesitan reservar memoria para
+      procesar la información que reciben. En esta vulnerabilidad, un proceso del servicio
+      SMB — el que permite compartir archivos e impresoras en red — no era capaz de
+      dimensionar correctamente la memoria de ciertos paquetes entrantes, y por lo tanto
+      los dejaba desbordar. La sofisticación de EternalBlue radica en que ese desbordamiento
+      era suficiente para que los atacantes obtuvieran una sesión de terminal con privilegios
+      de administrador, habilitando desde allí reconocimiento de red interna, movimiento
+      lateral, evasión de defensas y acciones de impacto o exfiltración.
     </li>
     <li>
-      <code>ring3</code> — el payload Meterpreter generado por <code>msfvenom</code>.
-      Se concatena al final del shellcode kernel. El tamaño exacto del Meterpreter está
-      embebido dentro del shellcode del kernel para que sepa cuántos bytes copiar al
-      espacio de usuario.
+      <strong>La sesión en reversa:</strong> El exploit construye un paquete especialmente
+      diseñado que, al ser procesado por el servicio SMB defectuoso en la máquina víctima,
+      hace que esta responda al atacante con una sesión de terminal. Se dice <em>en reversa</em>
+      porque es el receptor del mensaje (la víctima) quien inicia la conexión de vuelta hacia
+      el emisor (el atacante) — no al revés. Esto le permite eludir firewalls que bloquean
+      conexiones entrantes.
+    </li>
+    <li>
+      <strong>El puente kernel → usuario:</strong> El exploit consigue ejecutar código con
+      los máximos privilegios del sistema (nivel kernel). Desde ahí, inyecta Meterpreter en
+      un proceso normal de Windows y le entrega el control — esto es lo que abre la sesión
+      interactiva.
     </li>
   </ul>
-
-  <p><strong>2. <code>smb_eternalblue</code> — Los 4 pasos del ataque</strong></p>
-  <p>El módulo ejecuta cuatro pasos en secuencia para explotar el sistema Windows 7 / Server 2008 R2:</p>
-  <ul>
-    <li><strong>Step 1:</strong> Conectar al share <code>IPC$</code> vía SMBv1 sin credenciales (login anónimo).</li>
-    <li><strong>Step 2:</strong> Enviar un paquete NT_TRANS grande con buffer SMBv1 malformado, inicializando la corrupción del pool.</li>
-    <li><strong>Step 3:</strong> <em>Pool grooming</em> — el exploit alterna abrir conexiones SMBv2 (que asignan bloques de ~64KB en el kernel pool) y cerrar conexiones SMBv1 (que liberan bloques), de modo que el buffer a corromper quede adyacente en memoria al buffer que el atacante controla. El parámetro <code>GroomAllocations</code> controla cuántas veces se repite este llenado. Sin este trabajo de ingeniería de memoria, el overflow corrompería memoria aleatoria y el sistema colapsaría (BSOD).</li>
-    <li><strong>Step 4:</strong> Enviar el payload con el shellcode.</li>
-  </ul>
-
-  <p><strong>3. <code>create_fea_list</code> — Donde vive el bug original</strong></p>
-  <p>
-    FEA (File Extended Attributes) es un concepto heredado del OS/2. Windows Server 2008
-    aún soporta estas estructuras por compatibilidad. Cuando el servidor recibe una lista FEA
-    vía SMBv1, llama a <code>SrvOs2FeaListSizeToNt()</code> para calcular cuánta memoria
-    necesita. El cálculo tiene un error aritmético: <strong>resta un valor DWORD (32 bits)
-    de una variable WORD (16 bits)</strong>. Si el resultado es negativo, el tipo WORD hace
-    <em>underflow</em> y el resultado se convierte en un número enorme positivo.
-  </p>
-  <p>
-    El efecto: el kernel cree que el buffer necesita casi 0 bytes, asigna un buffer diminuto,
-    y luego <code>memmove()</code> copia toda la lista FEA dentro de ese buffer demasiado
-    pequeño — overflow controlado. Lo que se escribe fuera del buffer es exactamente
-    <code>fake_srv_net_buf</code>, una estructura falsa que el kernel procesa como real,
-    redirigiendo la ejecución al shellcode.
-  </p>
 
   <div class="pregunta">
     <strong>Pregunta 1:</strong> El exploit da ejecucion en modo kernel (anillo 0), pero
