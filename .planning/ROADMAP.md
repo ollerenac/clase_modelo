@@ -20,7 +20,7 @@
 **Plans:** 1 plan
 
 Plans:
-- [ ] 01-01-PLAN.md — Create repo, push index.html skeleton, enable GitHub Pages, verify live URL
+- [~] 01-01-PLAN.md — Create repo, push index.html skeleton, enable GitHub Pages, verify live URL (Task 1 complete; awaiting human verify at Task 2 checkpoint)
 
 **Success Criteria:**
 1. `https://ollerenac.github.io/clase_modelo` carga sin error 404 en un navegador

@@ -10,19 +10,22 @@ See: .planning/PROJECT.md (updated 2026-06-02)
 ## Current Status
 
 - **Phase:** 1 of 2
-- **Status:** Ready to execute
-- **Last action:** Phase 1 planned — 1 plan in 1 wave (2026-06-02)
+- **Plan:** 01 of 01 — awaiting human verification (Task 2 checkpoint)
+- **Status:** Checkpoint — human verify live URL
+- **Last action:** Task 1 complete — repo created, index.html pushed, GitHub Pages enabled (2026-06-02)
+- **Stopped at:** Task 2 checkpoint:human-verify — confirm https://ollerenac.github.io/clase_modelo loads in browser
 
 ## Phase Progress
 
 | Phase | Name | Status | Notes |
 |-------|------|--------|-------|
-| 1 | Repo e Infraestructura | 📋 Planned | 1 plan, 1 wave |
+| 1 | Repo e Infraestructura | 🔄 In Progress | Plan 01 at checkpoint |
 | 2 | Contenido y Publicación | 🔲 Not started | Depends on Phase 1 |
 
 ## Decisions Log
 
-*(empty — populated as work progresses)*
+- GitHub Pages API: use `--input -` pipe for JSON body (not `--field` which mis-quotes objects as strings)
+- Push strategy: `git push -u origin master:main` to publish local master as remote main without renaming local branch
 
 ## Blockers
 
